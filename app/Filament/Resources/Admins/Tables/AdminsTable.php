@@ -1,0 +1,62 @@
+<?php
+
+namespace App\Filament\Resources\Admins\Tables;
+
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
+use Illuminate\Support\Str;
+
+class AdminsTable
+{
+    public static function configure(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('name')
+                    ->searchable(),
+                TextColumn::make('email')
+                    ->searchable(),
+                TextColumn::make('roles.name')
+                    ->label('Roles')
+                    ->formatStateUsing(fn($state): string => Str::headline($state))
+                    ->searchable(),
+                TextColumn::make('status')
+                    ->formatStateUsing(fn($state): string => $state ? 'Enabled' : 'Disabled')
+                    ->badge()
+                    ->colors([
+                        'success' => fn($state) => $state === 1,
+                        'danger' => fn($state) => $state === 0
+                    ]),
+                TextColumn::make('phone')
+                    ->searchable(),
+                TextColumn::make('addresses.street')
+                    ->label('Address')
+                    ->searchable(),
+
+                TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->filters([
+                //
+            ])
+            ->recordActions([
+                ViewAction::make(),
+                EditAction::make(),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
+            ]);
+    }
+}

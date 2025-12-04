@@ -2,7 +2,6 @@ services:
     meilisearch:
         image: getmeili/meilisearch:latest
         container_name: fila-meilisearch
-        restart: always
         ports:
             - "7700:7700"
         environment:
@@ -20,7 +19,6 @@ services:
             - "6379:6379"
         volumes:
             - redis-data:/data
-        restart: always
 
 volumes:
     redis-data:

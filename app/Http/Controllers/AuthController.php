@@ -7,7 +7,6 @@ use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
-use App\Models\User;
 use App\Services\AuthService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
@@ -27,8 +26,6 @@ class AuthController extends Controller
             $request->remember_me ?? false
         );
 
-        $user = User::find($response['user']['id']);
-
         return $this->success($response, 'Logged in successfully');
     }
 
@@ -38,7 +35,7 @@ class AuthController extends Controller
 
         return $user
             ? $this->success($user, 'User created successfully', 201)
-            : ApiResponse::error('Registration failed', 400);
+            : $this->error('Registration failed', 400);
     }
 
     public function getAuthUser(Request $request)

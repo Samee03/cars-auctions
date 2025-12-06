@@ -10,6 +10,8 @@ use App\Traits\ApiResponse;
 
 class ProfileController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(private readonly ProfileService $profileService)
     {
     }
@@ -18,7 +20,7 @@ class ProfileController extends Controller
     {
         $user = auth()->user()->load(['addresses']);
 
-        return ApiResponse::success(new CustomerResource($user));
+        return $this->success(new CustomerResource($user));
     }
 
     public function updateUser(UpdateUserProfileRequest $request)
@@ -27,7 +29,7 @@ class ProfileController extends Controller
 
         $updatedUser = $this->profileService->updateUser($dto);
 
-        return ApiResponse::success(
+        return $this->success(
             new CustomerResource($updatedUser),
             'Customer profile updated successfully'
         );

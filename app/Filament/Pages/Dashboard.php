@@ -3,28 +3,26 @@
 namespace App\Filament\Pages;
 
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
 use Filament\Pages\Dashboard as BaseDashboard;
+use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 
 class Dashboard extends BaseDashboard
 {
-    use BaseDashboard\Concerns\HasFiltersForm;
+    use HasFiltersForm;
 
-    public function filtersForm(Form $form): Form
+    public function filtersForm(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make()
                     ->schema([
-                        DatePicker::make('startDate')
-                            ->maxDate(fn(Get $get) => $get('endDate') ?: now()),
+                        DatePicker::make('startDate'),
                         DatePicker::make('endDate')
-                            ->minDate(fn(Get $get) => $get('startDate') ?: now())
-                            ->maxDate(now()),
                     ])
-                    ->columns(3),
+                    ->columns(2)
+                    ->columnSpan(3),
             ]);
     }
 }

@@ -5,6 +5,8 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Extensions\ResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -95,6 +97,11 @@ class User extends Authenticatable
         ];
     }
 
+    public function getFullNameAttribute(): string
+    {
+        return trim("{$this->first_name} {$this->last_name}");
+    }
+
     /** @return MorphToMany<Address> */
     public function addresses(): MorphToMany
     {
@@ -134,15 +141,52 @@ class User extends Authenticatable
             ->where('type', 'billing');
     }
 
+    public function companyProfile(): HasOne
+    {
+        return $this->hasOne(CompanyProfile::class);
+    }
+
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    public function bidRequests(): HasMany
+    {
+        return $this->hasMany(BidRequest::class);
+    }
+
     /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
      */
+    public function isApproved(): bool
+    {
+        return $this->approval_status === 'approved';
+    }
+
+    public function isPendingApproval(): bool
+    {
+        return $this->approval_status === 'pending';
+    }
+
+    public function isCompanyBuyer(): bool
+    {
+        return $this->account_type === 'company';
+    }
+
+    public function isIndividualBuyer(): bool
+    {
+        return $this->account_type === 'individual';
+    }
+
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
+            'approved_at' => 'datetime',
+            'terms_accepted_at' => 'datetime',
             'password' => 'hashed',
         ];
     }

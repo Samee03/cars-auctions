@@ -18,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(AlwaysAcceptJson::class);
+        $middleware->alias([
+            'approved' => \App\Http\Middleware\EnsureUserIsApproved::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (ValidationException $e) {
@@ -32,6 +35,8 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($request->wantsJson()) {
                 return ApiResponse::error('Object not found', $e->getStatusCode());
             }
+
+            return null;
         })->renderable(function (ThrottleRequestsException $e) {
             return ApiResponse::error($e->getMessage(), $e->getStatusCode());
         });

@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Extensions\ResetPassword;
+use Database\Factories\UserFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -13,86 +15,96 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 use Laravel\Scout\Searchable;
-use Database\Factories\UserFactory;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, Searchable, HasApiTokens;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
+        'first_name',
+        'last_name',
         'name',
         'email',
         'password',
         'phone',
-        'company',
-        'date_of_birth',
+        'country',
+        'city',
+        'account_type',
         'status',
+        'approval_status',
+        'approved_at',
+        'terms_accepted_at',
         'provider',
         'provider_id',
         'backoffice_access',
+        'email_verified_at',
+        'remember_token',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    protected static function booted(): void
-    {
-        $added_by_admin = false;
-        static::creating(function ($user) use (&$added_by_admin) {
-            if (empty($user->password)) {
-                $randomPassword = Str::random(10);
-                $user->password = bcrypt($randomPassword);
-                $added_by_admin = true;
-            }
-        });
-
-        static::saved(function ($user) use (&$added_by_admin) {
-            if ($user->wasRecentlyCreated && $added_by_admin) {
-                Password::setDefaultDriver('users');
-                $status = Password::sendResetLink(['email' => $user->email]);
-
-                if ($status === Password::RESET_LINK_SENT) {
-                    Log::info("Password reset link sent to {$user->email}.");
-                } else {
-                    Log::error("Failed to send password reset link to {$user->email}. Status: {$status}");
-                }
-            }
-        });
-    }
-
-    /**
-     * Get the name of the index associated with the model.
-     */
     public function searchableAs(): string
     {
         return 'users_index';
     }
 
-    /**
-     * Get the indexable data array for the model.
-     *
-     * @return array<string, mixed>
-     */
     public function toSearchableArray(): array
     {
         return [
             'id' => (int)$this->id,
+            'first_name' => $this->first_name,
+            'last_name' => $this->last_name,
+            'full_name' => $this->full_name,
             'name' => $this->name,
             'email' => $this->email,
+            'phone' => $this->phone,
+            'country' => $this->country,
+            'city' => $this->city,
+            'account_type' => $this->account_type,
+            'approval_status' => $this->approval_status,
+            'status' => $this->status,
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $user) {
+            $fullName = trim(implode(' ', array_filter([
+                $user->first_name,
+                $user->last_name,
+            ])));
+
+            if ($fullName !== '') {
+                $user->name = $fullName;
+            }
+        });
+    }
+
+    public function getFullNameAttribute(): string
+    {
+        return trim(implode(' ', array_filter([
+            $this->first_name,
+            $this->last_name,
+        ])));
+    }
+
+    public function companyProfile()
+    {
+        return $this->hasOne(CompanyProfile::class);
+    }
+
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    public function bidRequests(): HasMany
+    {
+        return $this->hasMany(BidRequest::class);
     }
 
     /** @return MorphToMany<Address> */
@@ -101,48 +113,73 @@ class User extends Authenticatable
         return $this->morphToMany(Address::class, 'addressable');
     }
 
+    public function defaultShippingAddress()
+    {
+        return $this->addresses()
+            ->wherePivot('type', 'shipping')
+            ->wherePivot('is_default', true)
+            ->first();
+    }
+
     public function sendPasswordResetNotification($token): void
     {
-        $this->notify(new ResetPassword($token));
+        try {
+            $status = app(ResetPassword::class)->send($this->email, $token);
+
+            if ($status !== Password::RESET_LINK_SENT) {
+                Log::error('Failed to send reset password email to user.', [
+                    'email' => $this->email,
+                    'status' => $status,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            Log::error('Failed to send reset password email to user.', [
+                'email' => $this->email,
+                'message' => $e->getMessage(),
+            ]);
+        }
     }
 
-    public function defaultShippingAddress(): object|null
+    public function initials(): string
     {
-        return $this->shippingAddresses()
-            ->wherePivot('addresses.is_default', true)
-            ->where('addresses.type', 'shipping')
-            ->first();
+        $parts = preg_split('/\s+/', trim($this->full_name)) ?: [];
+
+        return Str::upper(
+            collect($parts)
+                ->filter()
+                ->take(2)
+                ->map(fn(string $part) => Str::substr($part, 0, 1))
+                ->implode('')
+        );
     }
 
-    public function shippingAddresses(): MorphToMany
+    public function isApproved(): bool
     {
-        return $this->morphToMany(Address::class, 'addressable')
-            ->where('type', 'shipping');
+        return $this->approval_status === 'approved';
     }
 
-    public function defaultBillingAddress(): object|null
+    public function isPendingApproval(): bool
     {
-        return $this->billingAddresses()
-            ->wherePivot('addresses.is_default', true)
-            ->where('addresses.type', 'billing')
-            ->first();
+        return $this->approval_status === 'pending';
     }
 
-    public function billingAddresses(): MorphToMany
+    public function isCompanyBuyer(): bool
     {
-        return $this->morphToMany(Address::class, 'addressable')
-            ->where('type', 'billing');
+        return $this->account_type === 'company';
     }
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+    public function isIndividualBuyer(): bool
+    {
+        return $this->account_type === 'individual';
+    }
+
     protected function casts(): array
     {
         return [
+            'status' => 'boolean',
             'email_verified_at' => 'datetime',
+            'approved_at' => 'datetime',
+            'terms_accepted_at' => 'datetime',
             'password' => 'hashed',
         ];
     }

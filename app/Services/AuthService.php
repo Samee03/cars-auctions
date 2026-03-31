@@ -34,10 +34,18 @@ class AuthService
             ]);
         }
 
-        $user->tokens()->delete();
+        $maxTokens = 5;
+
+        $user->tokens()
+            ->where('expires_at', '<', now())
+            ->delete();
+
+        if ($user->tokens()->count() >= $maxTokens) {
+            $user->tokens()->oldest()->first()?->delete();
+        }
 
         $token = $user->createToken(
-            'customer-auth-token',
+            'auth-token',
             [],
             $remember ? now()->addWeek() : now()->addDay()
         );
@@ -107,7 +115,7 @@ class AuthService
         }
 
         return $user->update([
-            'password' => $password,
+            'password' => Hash::make($password),
         ]);
     }
 
@@ -117,7 +125,7 @@ class AuthService
             $credentials,
             function ($user, $password) {
                 $user->update([
-                    'password' => $password,
+                    'password' => Hash::make($password),
                 ]);
             }
         );

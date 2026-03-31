@@ -13,12 +13,18 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->foreignId('address_id')->nullable()->constrained('addresses')->nullOnDelete();
+            $table->string('first_name')->nullable()->after('id');
+            $table->string('last_name')->nullable()->after('first_name');
             $table->string('email')->unique();
+            $table->enum('account_type', ['individual', 'company'])->default('individual')->after('email');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->boolean('status')->default(true);
+            $table->enum('status', ['active', 'disabled'])->default('active');
+            $table->string('admin_approval_status')->default('pending')->after('status'); // 'pending' | 'approved' | 'rejected'
+            $table->timestamp('admin_approved_at')->nullable()->after('admin_approval_status');
             $table->string('phone')->nullable();
+            $table->foreignId('assigned_agent_id')->nullable()->constrained('admins')->nullOnDelete();
             $table->string('company')->nullable();
             $table->date('date_of_birth')->nullable();
 
@@ -26,6 +32,7 @@ return new class extends Migration
             $table->string('provider_id')->nullable();
             $table->boolean('backoffice_access')->default(false);
             $table->rememberToken();
+            $table->timestamp('terms_accepted_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

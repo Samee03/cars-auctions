@@ -23,7 +23,9 @@ class UpdateUserProfileRequest extends FormRequest
     {
         return [
             // User
-            'name' => 'required|string|max:255',
+            'name' => 'nullable|string|max:255|required_without:first_name',
+            'first_name' => 'nullable|string|max:255|required_without:name',
+            'last_name' => 'nullable|string|max:255',
             'email' => 'required|email',
 
             // Customer Profile

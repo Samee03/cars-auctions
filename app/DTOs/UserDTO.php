@@ -7,7 +7,9 @@ use Carbon\Carbon;
 class UserDTO
 {
     public function __construct(
-        public string  $name,
+        public ?string $name,
+        public ?string $firstName,
+        public ?string $lastName,
         public string  $email,
         public ?string $phone = null,
         public ?string $company = null,
@@ -22,7 +24,9 @@ class UserDTO
     public static function fromArray(array $data): self
     {
         return new self(
-            name: $data['name'],
+            name: $data['name'] ?? null,
+            firstName: $data['first_name'] ?? null,
+            lastName: $data['last_name'] ?? null,
             email: $data['email'],
             phone: $data['phone'] ?? null,
             company: $data['company'] ?? null,
@@ -32,13 +36,26 @@ class UserDTO
 
     public function toUserArray(): array
     {
-        return [
-            'name' => $this->name,
+        $payload = [
             'email' => $this->email,
             'phone' => $this->phone,
             'company' => $this->company,
             'date_of_birth' => $this->dateOfBirth,
         ];
+
+        if (!is_null($this->name)) {
+            $payload['name'] = $this->name;
+        }
+
+        if (!is_null($this->firstName)) {
+            $payload['first_name'] = $this->firstName;
+        }
+
+        if (!is_null($this->lastName)) {
+            $payload['last_name'] = $this->lastName;
+        }
+
+        return $payload;
     }
 }
 

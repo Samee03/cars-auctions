@@ -10,6 +10,8 @@ use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Services\AuthService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
+use App\Http\Resources\CustomerResource;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 class AuthController extends Controller
 {
@@ -23,7 +25,7 @@ class AuthController extends Controller
         $response = $this->authService->attemptLogin(
             $request->email,
             $request->password,
-            $request->remember_me ?? false
+            $request->boolean('remember_me')
         );
 
         return $this->success($response, 'Logged in successfully');
@@ -31,16 +33,37 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request)
     {
-        $user = $this->authService->register($request->validated());
+        $response = $this->authService->register($request->validated());
 
-        return $user
-            ? $this->success($user, 'User created successfully', 201)
-            : $this->error('Registration failed', 400);
+        return $this->success($response, 'Registration successful', 201);
     }
 
     public function getAuthUser(Request $request)
     {
-        return $this->success($request->user(), 'User authenticated');
+        $user = $request->user()->load('companyProfile.address');
+
+        return $this->success(new CustomerResource($user), 'User authenticated');
+    }
+
+    public function verifyEmail(EmailVerificationRequest $request)
+    {
+        $request->fulfill();
+
+        return $this->success(
+            new CustomerResource($request->user()->load('companyProfile.address')),
+            'Email verified successfully. Your account is now pending admin approval.'
+        );
+    }
+
+    public function resendVerificationEmail(Request $request)
+    {
+        if ($request->user()->hasVerifiedEmail()) {
+            return $this->success(null, 'Email already verified.');
+        }
+
+        $request->user()->sendEmailVerificationNotification();
+
+        return $this->success(null, 'Verification email sent.');
     }
 
     public function changePassword(ChangePasswordRequest $request)

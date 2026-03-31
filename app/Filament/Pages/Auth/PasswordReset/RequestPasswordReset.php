@@ -27,7 +27,9 @@ class RequestPasswordReset extends BaseRequestPasswordReset
 
         $data = $this->form->getState();
 
-        if (Admin::where('email', $data['email'])->first()->status !== 1) {
+        $admin = Admin::where('email', $data['email'])->first();
+
+        if ($admin && $admin->status !== 1) {
             throw ValidationException::withMessages([
                 'data.email' => 'Your account is suspended.',
             ]);

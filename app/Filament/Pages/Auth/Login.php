@@ -43,7 +43,7 @@ class Login extends BaseLogin
         // Check if the authenticated user is an Admin
         if ($user instanceof Admin) {
             // Determine if the Admin has the "Super Admin" role
-            $isSuperAdmin = $user->roles()->where('name', 'Super Admin')->exists();
+            $isSuperAdmin = $user->roles()->where('name', 'super_admin')->exists();
 
             // Bypass the status check for Super Admins
             if (!$isSuperAdmin && $user->status === 0) {

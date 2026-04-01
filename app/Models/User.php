@@ -72,7 +72,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function toSearchableArray(): array
     {
         return [
-            'id' => (int)$this->id,
+            'id' => (int) $this->id,
             'first_name' => $this->first_name,
             'last_name' => $this->last_name,
             'full_name' => $this->full_name,
@@ -95,6 +95,16 @@ class User extends Authenticatable implements MustVerifyEmail
             if ($fullName !== '') {
                 $user->name = $fullName;
             }
+
+            if ($user->isDirty('verified_badge')) {
+                if ($user->verified_badge) {
+                    if (! $user->isDirty('admin_approved_at')) {
+                        $user->admin_approved_at = now();
+                    }
+                } else {
+                    $user->admin_approved_at = null;
+                }
+            }
         });
     }
 
@@ -110,7 +120,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function setNameAttribute(?string $value): void
     {
-        $value = trim((string)$value);
+        $value = trim((string) $value);
 
         if ($value === '') {
             $this->attributes['first_name'] = null;
@@ -172,7 +182,7 @@ class User extends Authenticatable implements MustVerifyEmail
             collect($parts)
                 ->filter()
                 ->take(2)
-                ->map(fn(string $part) => Str::substr($part, 0, 1))
+                ->map(fn (string $part) => Str::substr($part, 0, 1))
                 ->implode('')
         );
     }
@@ -199,9 +209,8 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function hasVerifiedBadge(): bool
     {
-        return $this->verified_badge === 'approved' || !is_null($this->admin_approved_at);
+        return $this->verified_badge === 1 || ! is_null($this->admin_approved_at);
     }
-
 
     public function isCompanyBuyer(): bool
     {

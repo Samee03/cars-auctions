@@ -2,7 +2,15 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use App\Models\Address;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 
 class UserForm
@@ -11,12 +19,82 @@ class UserForm
     {
         return $schema
             ->components([
-                TextInput::make('name')
-                    ->required(),
-                TextInput::make('email')
-                    ->label('Email address')
-                    ->email()
-                    ->required(),
+                Section::make('Identity')
+                    ->schema([
+                        Group::make()
+                            ->schema([
+                                TextInput::make('first_name')
+                                    ->required()
+                                    ->maxLength(255),
+                                TextInput::make('last_name')
+                                    ->required()
+                                    ->maxLength(255),
+                                TextInput::make('email')
+                                    ->label('Email address')
+                                    ->email()
+                                    ->required()
+                                    ->unique()
+                                    ->maxLength(255),
+                                TextInput::make('phone')
+                                    ->tel()
+                                    ->maxLength(30),
+                                DatePicker::make('date_of_birth')
+                                    ->native(false),
+                            ])
+                            ->columns(2),
+                    ]),
+                Section::make('Account')
+                    ->schema([
+                        TextInput::make('account_type')
+                            ->readOnly()
+                            ->disabled(),
+                        Select::make('status')
+                            ->options([
+                                'active' => 'Active',
+                                'disabled' => 'Disabled',
+                            ])
+                            ->required()
+                            ->native(false),
+                        Toggle::make('verified_badge')
+                            ->label('Verified badge')
+                            ->live()
+                            ->afterStateUpdated(function (mixed $state, Set $set): void {
+                                if ($state) {
+                                    $set('admin_approved_at', now());
+                                } else {
+                                    $set('admin_approved_at', null);
+                                }
+                            }),
+                    ])
+                    ->columns(2),
+                Section::make('Assignment & address')
+                    ->schema([
+                        Select::make('assigned_agent_id')
+                            ->label('Assigned agent')
+                            ->relationship('assignedAgent', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->nullable(),
+                        Select::make('address_id')
+                            ->label('Primary address')
+                            ->relationship(
+                                name: 'address',
+                                titleAttribute: 'street',
+                                modifyQueryUsing: fn ($query) => $query->orderByDesc('id')
+                            )
+                            ->getOptionLabelFromRecordUsing(fn (Address $record): string => trim(implode(', ', array_filter([
+                                $record->street,
+                                $record->city,
+                                $record->state,
+                                $record->country,
+                                $record->zip,
+                            ]))))
+                            ->searchable(['street', 'city', 'state', 'zip', 'country'])
+                            ->preload()
+                            ->nullable(),
+                    ])
+                    ->columns(2)
+                    ->columnSpan(2),
             ]);
     }
 }

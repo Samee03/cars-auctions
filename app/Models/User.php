@@ -37,12 +37,11 @@ class User extends Authenticatable implements MustVerifyEmail
         'phone',
         'address_id',
         'email_verified_at',
+        'verified_badge',
         'admin_approved_at',
         'assigned_agent_id',
-        'company',
         'date_of_birth',
         'status',
-        'admin_approval_status',
         'provider',
         'provider_id',
         'backoffice_access',
@@ -81,7 +80,6 @@ class User extends Authenticatable implements MustVerifyEmail
             'email' => $this->email,
             'phone' => $this->phone,
             'account_type' => $this->account_type,
-            'admin_approval_status' => $this->admin_approval_status,
             'status' => $this->status,
         ];
     }
@@ -108,16 +106,6 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getFullNameAttribute(): string
     {
         return $this->name;
-    }
-
-    public function getApprovalStatusAttribute(): ?string
-    {
-        return $this->admin_approval_status;
-    }
-
-    public function getVerifiedBadgeAttribute(): bool
-    {
-        return !is_null($this->admin_approved_at);
     }
 
     public function setNameAttribute(?string $value): void
@@ -209,15 +197,11 @@ class User extends Authenticatable implements MustVerifyEmail
             ->where('type', 'billing');
     }
 
-    public function isApproved(): bool
+    public function hasVerifiedBadge(): bool
     {
-        return $this->admin_approval_status === 'approved' || !is_null($this->admin_approved_at);
+        return $this->verified_badge === 'approved' || !is_null($this->admin_approved_at);
     }
 
-    public function isPendingApproval(): bool
-    {
-        return $this->admin_approval_status === 'pending' && is_null($this->admin_approved_at);
-    }
 
     public function isCompanyBuyer(): bool
     {

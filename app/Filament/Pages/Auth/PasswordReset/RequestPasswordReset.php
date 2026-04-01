@@ -5,10 +5,10 @@ namespace App\Filament\Pages\Auth\PasswordReset;
 use App\Models\Admin;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use Exception;
-use Filament\Facades\Filament;
 use Filament\Auth\Notifications\ResetPassword as ResetPasswordNotification;
-use Filament\Notifications\Notification;
 use Filament\Auth\Pages\PasswordReset\RequestPasswordReset as BaseRequestPasswordReset;
+use Filament\Facades\Filament;
+use Filament\Notifications\Notification;
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
@@ -27,7 +27,9 @@ class RequestPasswordReset extends BaseRequestPasswordReset
 
         $data = $this->form->getState();
 
-        if (Admin::where('email', $data['email'])->first()->status !== 1) {
+        $admin = Admin::where('email', $data['email'])->first();
+
+        if ($admin && $admin->status !== 1) {
             throw ValidationException::withMessages([
                 'data.email' => 'Your account is suspended.',
             ]);

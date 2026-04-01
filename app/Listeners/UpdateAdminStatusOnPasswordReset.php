@@ -4,8 +4,6 @@ namespace App\Listeners;
 
 use App\Models\Admin;
 use Illuminate\Auth\Events\PasswordReset;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 
 class UpdateAdminStatusOnPasswordReset
@@ -21,7 +19,7 @@ class UpdateAdminStatusOnPasswordReset
     /**
      * Handle the event.
      *
-     * @param \Illuminate\Auth\Events\PasswordReset $event
+     * @param PasswordReset $event
      * @return void
      */
 

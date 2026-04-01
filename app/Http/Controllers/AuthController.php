@@ -2,18 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\DTOs\RegisterCustomerDTO;
 use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
+use App\Http\Resources\CustomerResource;
+use App\Models\User;
 use App\Services\AuthService;
 use App\Traits\ApiResponse;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
     use ApiResponse;
+
     public function __construct(private readonly AuthService $authService)
     {
     }
@@ -23,7 +28,7 @@ class AuthController extends Controller
         $response = $this->authService->attemptLogin(
             $request->email,
             $request->password,
-            $request->remember_me ?? false
+            $request->boolean('remember_me')
         );
 
         return $this->success($response, 'Logged in successfully');
@@ -31,16 +36,52 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request)
     {
-        $user = $this->authService->register($request->validated());
+        $dto = RegisterCustomerDTO::fromValidated($request->validated());
+        $response = $this->authService->register($dto);
 
-        return $user
-            ? $this->success($user, 'User created successfully', 201)
-            : $this->error('Registration failed', 400);
+        return $this->success($response, 'Registration successful', 201);
     }
 
     public function getAuthUser(Request $request)
     {
-        return $this->success($request->user(), 'User authenticated');
+        $user = $request->user()->load('companyProfile.address');
+
+        return $this->success(new CustomerResource($user), 'User authenticated');
+    }
+
+    public function verifyEmail(Request $request, string $id, string $hash)
+    {
+        $user = User::findOrFail($id);
+
+        if (!hash_equals((string)$user->getKey(), (string)$id)) {
+            abort(403);
+        }
+
+        if (!hash_equals(sha1($user->getEmailForVerification()), (string)$hash)) {
+            abort(403);
+        }
+
+        if (!$user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+
+            event(new Verified($user));
+        }
+
+        return $this->success(
+            new CustomerResource($user->load('companyProfile.address')),
+            'Email verified successfully. Your account is now pending admin approval.'
+        );
+    }
+
+    public function resendVerificationEmail(Request $request)
+    {
+        if ($request->user()->hasVerifiedEmail()) {
+            return $this->success(null, 'Email already verified.');
+        }
+
+        $request->user()->sendEmailVerificationNotification();
+
+        return $this->success(null, 'Verification email sent.');
     }
 
     public function changePassword(ChangePasswordRequest $request)

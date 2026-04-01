@@ -5,15 +5,17 @@ namespace App\DTOs;
 class AddressDTO
 {
     public function __construct(
-        public string $street,
-        public string $city,
-        public string $state,
-        public string $country,
-        public string $zip,
+        public string  $street,
+        public string  $city,
+        public string  $state,
+        public string  $country,
+        public string  $zip,
         public ?string $type,
-        public ?bool $isDefault,
+        public ?bool   $isDefault,
         public ?string $notes
-    ) {}
+    )
+    {
+    }
 
     public static function fromArray(array $data): self
     {

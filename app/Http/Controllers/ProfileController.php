@@ -18,16 +18,18 @@ class ProfileController extends Controller
 
     public function getProfile()
     {
-        $user = auth()->user()->load(['addresses']);
+        $user = auth()->user()->load(['addresses', 'companyProfile.address']);
 
         return $this->success(new CustomerResource($user));
     }
 
     public function updateUser(UpdateUserProfileRequest $request)
     {
-        $dto = UserDTO::fromArray($request->validated());
+        $validated = $request->validated();
+        $dto = UserDTO::fromArray($validated);
+        $companyProfile = $validated['company_profile'] ?? null;
 
-        $updatedUser = $this->profileService->updateUser($dto);
+        $updatedUser = $this->profileService->updateUser($dto, $companyProfile);
 
         return $this->success(
             new CustomerResource($updatedUser),

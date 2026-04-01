@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 class Address extends Model
@@ -18,5 +19,10 @@ class Address extends Model
     public function users(): MorphToMany
     {
         return $this->morphedByMany(User::class, 'addressable');
+    }
+
+    public function companyProfiles(): HasMany
+    {
+        return $this->hasMany(CompanyProfile::class);
     }
 }

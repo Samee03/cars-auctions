@@ -12,9 +12,7 @@ class ProfileController extends Controller
 {
     use ApiResponse;
 
-    public function __construct(private readonly ProfileService $profileService)
-    {
-    }
+    public function __construct(private readonly ProfileService $profileService) {}
 
     public function getProfile()
     {
@@ -25,9 +23,11 @@ class ProfileController extends Controller
 
     public function updateUser(UpdateUserProfileRequest $request)
     {
-        $dto = UserDTO::fromArray($request->validated());
+        $validated = $request->validated();
+        $dto = UserDTO::fromArray($validated);
+        $companyProfile = $validated['company_profile'] ?? null;
 
-        $updatedUser = $this->profileService->updateUser($dto);
+        $updatedUser = $this->profileService->updateUser($dto, $companyProfile);
 
         return $this->success(
             new CustomerResource($updatedUser),

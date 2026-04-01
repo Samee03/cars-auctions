@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\DTOs\RegisterCustomerDTO;
 use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
@@ -33,7 +34,8 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request)
     {
-        $response = $this->authService->register($request->validated());
+        $dto = RegisterCustomerDTO::fromValidated($request->validated());
+        $response = $this->authService->register($dto);
 
         return $this->success($response, 'Registration successful', 201);
     }

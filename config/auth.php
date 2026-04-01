@@ -19,6 +19,10 @@ return [
     'defaults' => [
         'guard' => env('AUTH_GUARD', 'web'),
         'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
+        'admin' => [
+            'guard' => 'admin',
+            'passwords' => 'admins'
+        ]
     ],
 
     /*
@@ -142,6 +146,20 @@ return [
     'verification' => [
         'expire' => (int) env('AUTH_VERIFICATION_EXPIRE', 60),
         'frontend_url' => env('FRONTEND_URL'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Customer password reset (forgot password email link)
+    |--------------------------------------------------------------------------
+    |
+    | path: Frontend route that collects the new password and calls the API.
+    | Uses the same FRONTEND_URL base as email verification when set.
+    |
+    */
+
+    'password_reset' => [
+        'path' => env('AUTH_PASSWORD_RESET_FRONTEND_PATH', '/reset-password'),
     ],
 
 ];

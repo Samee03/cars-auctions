@@ -3,7 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Extensions\ResetPassword;
+use App\Notifications\CustomerResetPassword;
 use App\Notifications\CustomerVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -160,7 +160,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function sendPasswordResetNotification($token): void
     {
-        $this->notify(new ResetPassword($token));
+        $this->notify(new CustomerResetPassword($token));
     }
 
     public function sendEmailVerificationNotification(): void

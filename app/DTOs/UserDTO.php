@@ -13,7 +13,6 @@ class UserDTO
         public ?string $lastName,
         public string  $email,
         public ?string $phone = null,
-        public ?string $company = null,
         public ?string $dateOfBirth = null,
     )
     {
@@ -35,7 +34,6 @@ class UserDTO
             lastName: $data['last_name'] ?? null,
             email: $data['email'],
             phone: $data['phone'] ?? null,
-            company: $data['company'] ?? null,
             dateOfBirth: $data['date_of_birth'] ?? null,
         );
     }
@@ -50,7 +48,6 @@ class UserDTO
         $payload = [
             'email' => $this->email,
             'phone' => $this->phone,
-            'company' => $this->company,
             'date_of_birth' => $this->dateOfBirth,
         ];
 
@@ -81,7 +78,7 @@ class UserDTO
             'password' => $hashedPassword,
             'account_type' => $accountType,
             'status' => 'active',
-            'admin_approval_status' => 'pending',
+            'verified_badge' => false,
             'terms_accepted_at' => Date::now(),
         ];
     }

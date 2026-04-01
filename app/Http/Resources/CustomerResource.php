@@ -27,11 +27,8 @@ class CustomerResource extends JsonResource
             'status' => $this->status,
             'email_verified' => $this->hasVerifiedEmail(),
             'email_verified_at' => $this->email_verified_at,
-            'approval_status' => $this->admin_approval_status,
+            'verified_badge' => $this->hasVerifiedBadge(),
             'admin_approved_at' => $this->admin_approved_at,
-            'verified_badge' => $this->verified_badge,
-            'is_approved' => $this->isApproved(),
-            'is_pending_approval' => $this->isPendingApproval(),
             'company_profile' => $this->when(
                 $this->isCompanyBuyer(),
                 fn() => $this->companyProfile ? [

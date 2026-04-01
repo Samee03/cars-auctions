@@ -27,7 +27,7 @@ class EnsureUserIsApproved
             ], 403);
         }
 
-        if (!$user->isApproved()) {
+        if (!$user->hasVerifiedBadge()) {
             return response()->json([
                 'message' => 'Your account is pending admin approval.',
             ], 403);

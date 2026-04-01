@@ -5,24 +5,26 @@ namespace App\DTOs;
 class CompanyProfileDTO
 {
     public function __construct(
-        public ?int $addressId,
-        public string $companyName,
+        public ?int    $addressId,
+        public string  $companyName,
         public ?string $registrationNumber,
-        public string $companyPhone,
+        public string  $companyPhone,
         public ?string $companyAddress,
-        public string $contactFirstName,
-        public string $contactLastName,
-        public string $contactEmail,
+        public string  $contactFirstName,
+        public string  $contactLastName,
+        public string  $contactEmail,
         public ?string $contactPhone,
-    ) {}
+    )
+    {
+    }
 
     /**
-     * @param  array<string, mixed>  $data  Validated company registration payload (includes account holder names/email).
+     * @param array<string, mixed> $data Validated company registration payload (includes account holder names/email).
      */
     public static function fromRegistration(array $data): self
     {
         return new self(
-            addressId: isset($data['company_address_id']) ? (int) $data['company_address_id'] : null,
+            addressId: isset($data['company_address_id']) ? (int)$data['company_address_id'] : null,
             companyName: $data['company_name'],
             registrationNumber: $data['registration_number'] ?? null,
             companyPhone: $data['company_phone'],
@@ -55,7 +57,7 @@ class CompanyProfileDTO
     /**
      * Partial profile update: only keys present in $data are returned (API uses company_address_id → address_id).
      *
-     * @param  array<string, mixed>  $data  Validated company_profile subset
+     * @param array<string, mixed> $data Validated company_profile subset
      * @return array<string, mixed>
      */
     public static function attributesFromProfileInput(array $data): array
@@ -74,7 +76,7 @@ class CompanyProfileDTO
         $out = [];
 
         foreach ($stringKeys as $inputKey => $column) {
-            if (! array_key_exists($inputKey, $data)) {
+            if (!array_key_exists($inputKey, $data)) {
                 continue;
             }
 
@@ -84,7 +86,7 @@ class CompanyProfileDTO
 
         if (array_key_exists('company_address_id', $data)) {
             $v = $data['company_address_id'];
-            $out['address_id'] = ($v === '' || $v === null) ? null : (int) $v;
+            $out['address_id'] = ($v === '' || $v === null) ? null : (int)$v;
         }
 
         return $out;

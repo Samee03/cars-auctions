@@ -12,6 +12,7 @@ use App\Traits\ApiResponse;
 class AddressController extends Controller
 {
     use ApiResponse;
+
     public function __construct(private readonly AddressService $addressService)
     {
     }

@@ -9,7 +9,7 @@ use App\Models\User;
 class ProfileService
 {
     /**
-     * @param  array<string, mixed>|null  $companyProfile  Validated company_profile payload, if any
+     * @param array<string, mixed>|null $companyProfile Validated company_profile payload, if any
      */
     public function updateUser(UserDTO $dto, ?array $companyProfile = null): User
     {
@@ -29,7 +29,7 @@ class ProfileService
     }
 
     /**
-     * @param  array<string, mixed>  $attributes
+     * @param array<string, mixed> $attributes
      */
     private function syncCompanyProfile(User $user, array $attributes): void
     {

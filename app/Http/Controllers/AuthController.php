@@ -19,7 +19,9 @@ class AuthController extends Controller
 {
     use ApiResponse;
 
-    public function __construct(private readonly AuthService $authService) {}
+    public function __construct(private readonly AuthService $authService)
+    {
+    }
 
     public function login(LoginRequest $request)
     {
@@ -51,15 +53,15 @@ class AuthController extends Controller
     {
         $user = User::findOrFail($id);
 
-        if (! hash_equals((string) $user->getKey(), (string) $id)) {
+        if (!hash_equals((string)$user->getKey(), (string)$id)) {
             abort(403);
         }
 
-        if (! hash_equals(sha1($user->getEmailForVerification()), (string) $hash)) {
+        if (!hash_equals(sha1($user->getEmailForVerification()), (string)$hash)) {
             abort(403);
         }
 
-        if (! $user->hasVerifiedEmail()) {
+        if (!$user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
 
             event(new Verified($user));

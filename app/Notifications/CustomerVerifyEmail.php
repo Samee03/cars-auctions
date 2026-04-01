@@ -16,7 +16,7 @@ class CustomerVerifyEmail extends VerifyEmailNotification implements ShouldQueue
      * Build a signed verification URL. Uses a path-only signature so the same
      * link works when the public base URL is the SPA (or API) origin.
      *
-     * @param  mixed  $notifiable
+     * @param mixed $notifiable
      */
     protected function verificationUrl($notifiable): string
     {
@@ -24,8 +24,8 @@ class CustomerVerifyEmail extends VerifyEmailNotification implements ShouldQueue
             return call_user_func(static::$createUrlCallback, $notifiable);
         }
 
-        $base = rtrim((string) (config('auth.verification.frontend_url') ?: config('app.url')), '/');
-        $expire = (int) config('auth.verification.expire', 60);
+        $base = rtrim((string)(config('auth.verification.frontend_url') ?: config('app.url')), '/');
+        $expire = (int)config('auth.verification.expire', 60);
 
         $signedRelative = URL::temporarySignedRoute(
             'verification.verify',
@@ -37,6 +37,6 @@ class CustomerVerifyEmail extends VerifyEmailNotification implements ShouldQueue
             absolute: false
         );
 
-        return $base.$signedRelative;
+        return $base . $signedRelative;
     }
 }

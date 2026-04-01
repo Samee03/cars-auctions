@@ -12,7 +12,9 @@ class ProfileController extends Controller
 {
     use ApiResponse;
 
-    public function __construct(private readonly ProfileService $profileService) {}
+    public function __construct(private readonly ProfileService $profileService)
+    {
+    }
 
     public function getProfile()
     {

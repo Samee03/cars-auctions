@@ -34,7 +34,7 @@ class CustomerResource extends JsonResource
             'is_pending_approval' => $this->isPendingApproval(),
             'company_profile' => $this->when(
                 $this->isCompanyBuyer(),
-                fn () => $this->companyProfile ? [
+                fn() => $this->companyProfile ? [
                     'company_name' => $this->companyProfile->company_name,
                     'registration_number' => $this->companyProfile->registration_number,
                     'company_phone' => $this->companyProfile->company_phone,

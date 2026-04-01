@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -18,7 +19,7 @@ class UpdateUserProfileRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -49,7 +50,7 @@ class UpdateUserProfileRequest extends FormRequest
                 'nullable',
                 'integer',
                 Rule::exists('addresses', 'id')->where(function ($query): void {
-                    $query->whereHas('users', fn ($q) => $q->where('users.id', $this->user()->id));
+                    $query->whereHas('users', fn($q) => $q->where('users.id', $this->user()->id));
                 }),
             ],
         ];

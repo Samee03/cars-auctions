@@ -13,7 +13,7 @@ class CustomerResetPassword extends ResetPasswordNotification implements ShouldQ
     /**
      * SPA (or web app) URL with token and email query params for POST /api/reset-password.
      *
-     * @param  mixed  $notifiable
+     * @param mixed $notifiable
      */
     protected function resetUrl($notifiable): string
     {
@@ -21,12 +21,12 @@ class CustomerResetPassword extends ResetPasswordNotification implements ShouldQ
             return call_user_func(static::$createUrlCallback, $notifiable, $this->token);
         }
 
-        $base = rtrim((string) (config('auth.verification.frontend_url') ?: config('app.url')), '/');
-        $path = '/'.ltrim((string) config('auth.password_reset.path', '/reset-password'), '/');
+        $base = rtrim((string)(config('auth.verification.frontend_url') ?: config('app.url')), '/');
+        $path = '/' . ltrim((string)config('auth.password_reset.path', '/reset-password'), '/');
 
-        return $base.$path.'?'.http_build_query([
-            'token' => $this->token,
-            'email' => $notifiable->getEmailForPasswordReset(),
-        ]);
+        return $base . $path . '?' . http_build_query([
+                'token' => $this->token,
+                'email' => $notifiable->getEmailForPasswordReset(),
+            ]);
     }
 }

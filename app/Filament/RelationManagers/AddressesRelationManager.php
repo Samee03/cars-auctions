@@ -42,12 +42,10 @@ class AddressesRelationManager extends RelationManager
 
             Forms\Components\Select::make('country')
                 ->searchable()
-                ->getSearchResultsUsing(fn (string $query) =>
-                    Country::where('name', 'like', "%{$query}%")
-                        ->pluck('name', 'name')
+                ->getSearchResultsUsing(fn(string $query) => Country::where('name', 'like', "%{$query}%")
+                    ->pluck('name', 'name')
                 )
-                ->getOptionLabelUsing(fn ($value): ?string =>
-                    Country::firstWhere('name', $value)?->name
+                ->getOptionLabelUsing(fn($value): ?string => Country::firstWhere('name', $value)?->name
                 ),
         ]);
     }

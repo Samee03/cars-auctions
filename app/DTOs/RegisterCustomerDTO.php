@@ -5,14 +5,16 @@ namespace App\DTOs;
 class RegisterCustomerDTO
 {
     public function __construct(
-        public readonly UserDTO $user,
-        public readonly string $password,
-        public readonly string $accountType,
+        public readonly UserDTO            $user,
+        public readonly string             $password,
+        public readonly string             $accountType,
         public readonly ?CompanyProfileDTO $companyProfile = null,
-    ) {}
+    )
+    {
+    }
 
     /**
-     * @param  array<string, mixed>  $data  Output of RegisterRequest::validated()
+     * @param array<string, mixed> $data Output of RegisterRequest::validated()
      */
     public static function fromValidated(array $data): self
     {

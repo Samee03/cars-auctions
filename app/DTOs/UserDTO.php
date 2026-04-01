@@ -11,11 +11,12 @@ class UserDTO
         public ?string $name,
         public ?string $firstName,
         public ?string $lastName,
-        public string $email,
+        public string  $email,
         public ?string $phone = null,
         public ?string $company = null,
         public ?string $dateOfBirth = null,
-    ) {
+    )
+    {
         if ($this->dateOfBirth !== null && $this->dateOfBirth !== '') {
             $this->dateOfBirth = Carbon::parse($this->dateOfBirth)->format('Y-m-d');
         } else {
@@ -24,7 +25,7 @@ class UserDTO
     }
 
     /**
-     * @param  array<string, mixed>  $data
+     * @param array<string, mixed> $data
      */
     public static function fromArray(array $data): self
     {

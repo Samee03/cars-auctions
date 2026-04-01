@@ -23,7 +23,7 @@ class AuthService
             ->where('email', $email)
             ->first();
 
-        if (! $user || ! Hash::check($password, $user->password)) {
+        if (!$user || !Hash::check($password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
@@ -89,11 +89,11 @@ class AuthService
     {
         $user = User::find(auth()->id());
 
-        if (! $user) {
+        if (!$user) {
             return $this->error('User not found', 404);
         }
 
-        if (! Hash::check($current_password, $user->password)) {
+        if (!Hash::check($current_password, $user->password)) {
             throw ValidationException::withMessages([
                 'current_password' => ['Current password is incorrect'],
             ]);

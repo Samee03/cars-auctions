@@ -67,13 +67,8 @@ class AuthController extends Controller
             event(new Verified($user));
         }
 
-        $token = $request->bearerToken();
-
         return $this->success(
-            [
-                'token' => $token,
-                'user' => new CustomerResource($user->load('companyProfile.address'))
-            ],
+            new CustomerResource($user->load('companyProfile.address')),
             'Email verified successfully. Your account is now pending admin approval.'
         );
     }

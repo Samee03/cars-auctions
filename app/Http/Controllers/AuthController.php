@@ -7,18 +7,18 @@ use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
+use App\Http\Resources\CustomerResource;
+use App\Models\User;
 use App\Services\AuthService;
 use App\Traits\ApiResponse;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
-use App\Http\Resources\CustomerResource;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 class AuthController extends Controller
 {
     use ApiResponse;
-    public function __construct(private readonly AuthService $authService)
-    {
-    }
+
+    public function __construct(private readonly AuthService $authService) {}
 
     public function login(LoginRequest $request)
     {
@@ -45,12 +45,26 @@ class AuthController extends Controller
         return $this->success(new CustomerResource($user), 'User authenticated');
     }
 
-    public function verifyEmail(EmailVerificationRequest $request)
+    public function verifyEmail(Request $request, string $id, string $hash)
     {
-        $request->fulfill();
+        $user = User::findOrFail($id);
+
+        if (! hash_equals((string) $user->getKey(), (string) $id)) {
+            abort(403);
+        }
+
+        if (! hash_equals(sha1($user->getEmailForVerification()), (string) $hash)) {
+            abort(403);
+        }
+
+        if (! $user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+
+            event(new Verified($user));
+        }
 
         return $this->success(
-            new CustomerResource($request->user()->load('companyProfile.address')),
+            new CustomerResource($user->load('companyProfile.address')),
             'Email verified successfully. Your account is now pending admin approval.'
         );
     }

@@ -4,6 +4,7 @@ use App\Http\Controllers\AddressController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
 use App\Models\User;
+use Illuminate\Routing\Middleware\ValidateSignature;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 
@@ -19,6 +20,10 @@ Route::middleware('guest')->group(function () {
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 });
 
+Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
+    ->middleware(ValidateSignature::relative())
+    ->name('verification.verify');
+
 /*
 |--------------------------------------------------------------------------
 | Authenticated Routes (any logged-in user)
@@ -30,10 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('change.password');
 
-    // Email verification
-    Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
-        ->middleware('signed')
-        ->name('verification.verify');
+    // Email verification (resend only; verify link is public + signed)
     Route::post('/email/resend', [AuthController::class, 'resendVerificationEmail'])
         ->middleware('throttle:6,1')
         ->name('verification.send');
@@ -43,7 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
     | Verified + Approved Users Only
     |----------------------------------------------------------------------
     */
-    Route::middleware(['verified'])->group(function () {
+    Route::middleware(['api.verified'])->group(function () {
         Route::get('/profile', [ProfileController::class, 'getProfile'])->name('profile');
         Route::put('/profile', [ProfileController::class, 'updateUser'])->name('update.profile');
 
@@ -52,13 +54,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::get('/users', function () {
                 $users = Cache::remember('users.all', 3600, fn () => User::all());
+
                 return response()->json($users);
             });
 
             Route::get('/search-user', function () {
                 $key = request()->keywords;
 
-                $cacheKey = 'users.search.' . md5($key);
+                $cacheKey = 'users.search.'.md5($key);
 
                 $results = Cache::remember($cacheKey, 3600, fn () => User::search($key)->get());
 

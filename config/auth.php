@@ -129,4 +129,19 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Email Verification
+    |--------------------------------------------------------------------------
+    |
+    | frontend_url: Origin used in verification links (SPA or API). Defaults
+    | to APP_URL. Use your customer app URL when /api is proxied to this API.
+    |
+    */
+
+    'verification' => [
+        'expire' => (int) env('AUTH_VERIFICATION_EXPIRE', 60),
+        'frontend_url' => env('FRONTEND_URL'),
+    ],
+
 ];

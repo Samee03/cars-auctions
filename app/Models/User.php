@@ -4,6 +4,9 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Extensions\ResetPassword;
+use App\Notifications\CustomerVerifyEmail;
+use Database\Factories\UserFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -13,13 +16,11 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 use Laravel\Scout\Searchable;
-use Database\Factories\UserFactory;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, Searchable, HasApiTokens;
+    use HasApiTokens, HasFactory, Notifiable, Searchable;
 
     /**
      * The attributes that are mass assignable.
@@ -72,7 +73,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function toSearchableArray(): array
     {
         return [
-            'id' => (int)$this->id,
+            'id' => (int) $this->id,
             'first_name' => $this->first_name,
             'last_name' => $this->last_name,
             'full_name' => $this->full_name,
@@ -84,6 +85,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'status' => $this->status,
         ];
     }
+
     protected static function booted(): void
     {
         static::saving(function (self $user) {
@@ -115,12 +117,12 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function getVerifiedBadgeAttribute(): bool
     {
-        return !is_null($this->admin_approved_at);
+        return ! is_null($this->admin_approved_at);
     }
 
     public function setNameAttribute(?string $value): void
     {
-        $value = trim((string)$value);
+        $value = trim((string) $value);
 
         if ($value === '') {
             $this->attributes['first_name'] = null;
@@ -161,6 +163,11 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->notify(new ResetPassword($token));
     }
 
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new CustomerVerifyEmail);
+    }
+
     public function defaultShippingAddress()
     {
         return $this->addresses()
@@ -177,7 +184,7 @@ class User extends Authenticatable implements MustVerifyEmail
             collect($parts)
                 ->filter()
                 ->take(2)
-                ->map(fn(string $part) => Str::substr($part, 0, 1))
+                ->map(fn (string $part) => Str::substr($part, 0, 1))
                 ->implode('')
         );
     }
@@ -188,7 +195,7 @@ class User extends Authenticatable implements MustVerifyEmail
             ->where('type', 'shipping');
     }
 
-    public function defaultBillingAddress(): object|null
+    public function defaultBillingAddress(): ?object
     {
         return $this->billingAddresses()
             ->where('addresses.is_default', true)
@@ -204,7 +211,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function isApproved(): bool
     {
-        return $this->admin_approval_status === 'approved' || !is_null($this->admin_approved_at);
+        return $this->admin_approval_status === 'approved' || ! is_null($this->admin_approved_at);
     }
 
     public function isPendingApproval(): bool

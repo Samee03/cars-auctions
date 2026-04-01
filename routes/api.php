@@ -43,7 +43,7 @@ Route::middleware('auth:sanctum')->group(function () {
     | Verified + Approved Users Only
     |----------------------------------------------------------------------
     */
-    Route::middleware(['verified', 'approved'])->group(function () {
+    Route::middleware(['verified'])->group(function () {
         Route::get('/profile', [ProfileController::class, 'getProfile'])->name('profile');
         Route::put('/profile', [ProfileController::class, 'updateUser'])->name('update.profile');
 

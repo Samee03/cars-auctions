@@ -59,31 +59,6 @@ class User extends Authenticatable implements MustVerifyEmail
         'remember_token',
     ];
 
-    public function searchableAs(): string
-    {
-        return 'users_index';
-    }
-
-    /**
-     * Get the indexable data array for the model.
-     *
-     * @return array<string, mixed>
-     */
-    public function toSearchableArray(): array
-    {
-        return [
-            'id' => (int) $this->id,
-            'first_name' => $this->first_name,
-            'last_name' => $this->last_name,
-            'full_name' => $this->full_name,
-            'name' => $this->name,
-            'email' => $this->email,
-            'phone' => $this->phone,
-            'account_type' => $this->account_type,
-            'status' => $this->status,
-        ];
-    }
-
     protected static function booted(): void
     {
         static::saving(function (self $user) {
@@ -98,7 +73,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
             if ($user->isDirty('verified_badge')) {
                 if ($user->verified_badge) {
-                    if (! $user->isDirty('admin_approved_at')) {
+                    if (!$user->isDirty('admin_approved_at')) {
                         $user->admin_approved_at = now();
                     }
                 } else {
@@ -106,6 +81,31 @@ class User extends Authenticatable implements MustVerifyEmail
                 }
             }
         });
+    }
+
+    public function searchableAs(): string
+    {
+        return 'users_index';
+    }
+
+    /**
+     * Get the indexable data array for the model.
+     *
+     * @return array<string, mixed>
+     */
+    public function toSearchableArray(): array
+    {
+        return [
+            'id' => (int)$this->id,
+            'first_name' => $this->first_name,
+            'last_name' => $this->last_name,
+            'full_name' => $this->full_name,
+            'name' => $this->name,
+            'email' => $this->email,
+            'phone' => $this->phone,
+            'account_type' => $this->account_type,
+            'status' => $this->status,
+        ];
     }
 
     public function getNameAttribute(): string
@@ -120,7 +120,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function setNameAttribute(?string $value): void
     {
-        $value = trim((string) $value);
+        $value = trim((string)$value);
 
         if ($value === '') {
             $this->attributes['first_name'] = null;
@@ -137,7 +137,10 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function assignedAgent(): BelongsTo
     {
-        return $this->belongsTo(Admin::class, 'assigned_agent_id');
+        return $this->belongsTo(Admin::class, 'assigned_agent_id')
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'agent');
+            });
     }
 
     public function address(): BelongsTo
@@ -148,12 +151,6 @@ class User extends Authenticatable implements MustVerifyEmail
     public function companyProfile(): HasOne
     {
         return $this->hasOne(CompanyProfile::class);
-    }
-
-    /** @return MorphToMany<Address> */
-    public function addresses(): MorphToMany
-    {
-        return $this->morphToMany(Address::class, 'addressable');
     }
 
     public function sendPasswordResetNotification($token): void
@@ -174,6 +171,12 @@ class User extends Authenticatable implements MustVerifyEmail
             ->first();
     }
 
+    /** @return MorphToMany<Address> */
+    public function addresses(): MorphToMany
+    {
+        return $this->morphToMany(Address::class, 'addressable');
+    }
+
     public function initials(): string
     {
         $parts = preg_split('/\s+/', trim($this->full_name)) ?: [];
@@ -182,7 +185,7 @@ class User extends Authenticatable implements MustVerifyEmail
             collect($parts)
                 ->filter()
                 ->take(2)
-                ->map(fn (string $part) => Str::substr($part, 0, 1))
+                ->map(fn(string $part) => Str::substr($part, 0, 1))
                 ->implode('')
         );
     }
@@ -209,7 +212,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function hasVerifiedBadge(): bool
     {
-        return $this->verified_badge === 1 || ! is_null($this->admin_approved_at);
+        return $this->verified_badge === 1 || !is_null($this->admin_approved_at);
     }
 
     public function isCompanyBuyer(): bool

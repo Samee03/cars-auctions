@@ -49,8 +49,8 @@ class UsersTable
                     ->label('Status')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'active' => 'Active',
-                        'disabled' => 'Disabled',
+                        'active' => '',
+                        'disabled' => '',
                         default => str($state)->replace('_', ' ')->title()->toString(),
                     })
                     ->color(fn (string $state): string => match ($state) {
@@ -59,25 +59,25 @@ class UsersTable
                         default => 'gray',
                     })
                     ->icon(fn (string $state): Heroicon => match ($state) {
-                        'active' => Heroicon::OutlinedCheckCircle,
-                        'disabled' => Heroicon::OutlinedNoSymbol,
-                        default => Heroicon::OutlinedQuestionMarkCircle,
+                        'disabled' => Heroicon::NoSymbol,
+                        default => Heroicon::CheckCircle,
                     }),
                 IconColumn::make('verified_badge')
                     ->label('Verify Badge')
                     ->boolean(),
-                TextColumn::make('admin_approved_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(),
                 TextColumn::make('assignedAgent.name')
                     ->label('Agent')
                     ->placeholder('—')
+                    ->toggleable(),
+                TextColumn::make('admin_approved_at')
+                    ->dateTime()
+                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('email_verified_at')
                     ->dateTime()
                     ->toggleable()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -100,6 +100,13 @@ class UsersTable
                         'active' => 'Active',
                         'disabled' => 'Disabled',
                     ]),
+                SelectFilter::make('verified_badge')
+                    ->options([
+                        true => 'Verified',
+                        false => 'Pending',
+                    ]),
+                SelectFilter::make('assigned_agent_id')
+                    ->relationship('assignedAgent', 'name'),
             ])
             ->recordActions([
                 ViewAction::make(),

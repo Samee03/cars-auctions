@@ -28,10 +28,6 @@ class AddressesRelationManager extends RelationManager
                 ->required()
                 ->maxLength(255),
 
-            Forms\Components\TextInput::make('zip')
-                ->required()
-                ->maxLength(20),
-
             Forms\Components\TextInput::make('city')
                 ->required()
                 ->maxLength(100),
@@ -39,6 +35,10 @@ class AddressesRelationManager extends RelationManager
             Forms\Components\TextInput::make('state')
                 ->required()
                 ->maxLength(100),
+
+            Forms\Components\TextInput::make('zip')
+                ->required()
+                ->maxLength(20),
 
             Forms\Components\Select::make('country')
                 ->searchable()

@@ -3,9 +3,9 @@
 namespace App\Filament\Resources\Users\Schemas;
 
 use App\Models\Address;
+use App\Models\User;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Select as FormSelect;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Group;
@@ -48,7 +48,7 @@ class UserForm
                         TextInput::make('account_type')
                             ->readOnly()
                             ->disabled(),
-                        Select::make('status')
+                        FormSelect::make('status')
                             ->options([
                                 'active' => 'Active',
                                 'disabled' => 'Disabled',
@@ -69,18 +69,36 @@ class UserForm
                     ->columns(2),
                 Section::make('Assignment & address')
                     ->schema([
-                        Select::make('assigned_agent_id')
+                        FormSelect::make('assigned_agent_id')
                             ->label('Assigned agent')
                             ->relationship('assignedAgent', 'name')
                             ->searchable()
                             ->preload()
                             ->nullable(),
-                        Select::make('address_id')
+                        FormSelect::make('address_id')
                             ->label('Primary address')
                             ->relationship(
                                 name: 'address',
                                 titleAttribute: 'street',
-                                modifyQueryUsing: fn ($query) => $query->orderByDesc('id')
+                                modifyQueryUsing: function ($query, FormSelect $component) {
+                                    $user = $component->getRecord();
+
+                                    if (! $user instanceof User || ! $user->getKey()) {
+                                        return $query->whereRaw('0 = 1');
+                                    }
+
+                                    return $query
+                                        ->where(function ($q) use ($user) {
+                                            $q->whereHas('users', fn ($sub) => $sub->where('users.id', $user->getKey()));
+                                            if ($user->address_id) {
+                                                $q->orWhere(
+                                                    $q->getModel()->getQualifiedKeyName(),
+                                                    $user->address_id
+                                                );
+                                            }
+                                        })
+                                        ->orderByDesc($query->qualifyColumn('id'));
+                                }
                             )
                             ->getOptionLabelFromRecordUsing(fn (Address $record): string => trim(implode(', ', array_filter([
                                 $record->street,

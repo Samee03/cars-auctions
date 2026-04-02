@@ -106,6 +106,7 @@ class UsersTable
                         false => 'Pending',
                     ]),
                 SelectFilter::make('assigned_agent_id')
+                    ->label('Agent')
                     ->relationship('assignedAgent', 'name'),
             ])
             ->recordActions([

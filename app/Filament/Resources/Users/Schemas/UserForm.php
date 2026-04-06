@@ -6,6 +6,7 @@ use App\Models\Address;
 use App\Models\User;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select as FormSelect;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Group;
@@ -67,6 +68,53 @@ class UserForm
                             }),
                     ])
                     ->columns(2),
+                Section::make('Company details')
+                    ->relationship('companyProfile')
+                    ->schema([
+                        Group::make()
+                            ->schema([
+                                TextInput::make('company_name')
+                                    ->label('Company name')
+                                    ->required()
+                                    ->maxLength(255),
+                                TextInput::make('registration_number')
+                                    ->label('Registration number')
+                                    ->maxLength(255),
+                                TextInput::make('company_phone')
+                                    ->label('Company phone')
+                                    ->tel()
+                                    ->maxLength(30),
+                            ])
+                            ->columns(2),
+                        Textarea::make('company_address')
+                            ->label('Company address')
+                            ->rows(3)
+                            ->columnSpanFull(),
+                    ])
+                    ->visible(fn (callable $get): bool => $get('account_type') === 'company'),
+                Section::make('Contact person')
+                    ->relationship('companyProfile')
+                    ->schema([
+                        Group::make()
+                            ->schema([
+                                TextInput::make('contact_first_name')
+                                    ->label('First name')
+                                    ->maxLength(255),
+                                TextInput::make('contact_last_name')
+                                    ->label('Last name')
+                                    ->maxLength(255),
+                                TextInput::make('contact_email')
+                                    ->label('Email')
+                                    ->email()
+                                    ->maxLength(255),
+                                TextInput::make('contact_phone')
+                                    ->label('Phone')
+                                    ->tel()
+                                    ->maxLength(30),
+                            ])
+                            ->columns(2),
+                    ])
+                    ->visible(fn (callable $get): bool => $get('account_type') === 'company'),
                 Section::make('Assignment & address')
                     ->schema([
                         FormSelect::make('assigned_agent_id')

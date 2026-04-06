@@ -52,10 +52,6 @@ class UserInfolist
                             ->label('Admin approved at')
                             ->dateTime()
                             ->placeholder('—'),
-                        TextEntry::make('terms_accepted_at')
-                            ->label('Terms accepted at')
-                            ->dateTime()
-                            ->placeholder('—'),
                     ])
                     ->columns(2),
                 Section::make('Assignment & address')
@@ -76,15 +72,6 @@ class UserInfolist
                                     $a->zip,
                                 ]))) : '—';
                             }),
-                    ])
-                    ->columns(2),
-                Section::make('Timestamps')
-                    ->collapsed()
-                    ->schema([
-                        TextEntry::make('created_at')
-                            ->dateTime(),
-                        TextEntry::make('updated_at')
-                            ->dateTime(),
                     ])
                     ->columns(2),
             ]);

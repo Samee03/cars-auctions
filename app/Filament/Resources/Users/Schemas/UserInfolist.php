@@ -40,6 +40,40 @@ class UserInfolist
                             }),
                     ])
                     ->columns(2),
+                Section::make('Company details')
+                    ->schema([
+                        TextEntry::make('companyProfile.company_name')
+                            ->label('Company name'),
+                        TextEntry::make('companyProfile.registration_number')
+                            ->label('Registration number')
+                            ->placeholder('—'),
+                        TextEntry::make('companyProfile.company_phone')
+                            ->label('Company phone')
+                            ->placeholder('—'),
+                        TextEntry::make('companyProfile.company_address')
+                            ->label('Company address')
+                            ->placeholder('—')
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2)
+                    ->visible(fn (User $record): bool => $record->account_type === 'company'),
+                Section::make('Contact person')
+                    ->schema([
+                        TextEntry::make('companyProfile.contact_first_name')
+                            ->label('First name')
+                            ->placeholder('—'),
+                        TextEntry::make('companyProfile.contact_last_name')
+                            ->label('Last name')
+                            ->placeholder('—'),
+                        TextEntry::make('companyProfile.contact_email')
+                            ->label('Email')
+                            ->placeholder('—'),
+                        TextEntry::make('companyProfile.contact_phone')
+                            ->label('Phone')
+                            ->placeholder('—'),
+                    ])
+                    ->columns(2)
+                    ->visible(fn (User $record): bool => $record->account_type === 'company'),
                 Section::make('Verification & approval')
                     ->schema([
                         TextEntry::make('email_verified_at')
@@ -50,10 +84,6 @@ class UserInfolist
                             ->boolean(),
                         TextEntry::make('admin_approved_at')
                             ->label('Admin approved at')
-                            ->dateTime()
-                            ->placeholder('—'),
-                        TextEntry::make('terms_accepted_at')
-                            ->label('Terms accepted at')
                             ->dateTime()
                             ->placeholder('—'),
                     ])
@@ -76,15 +106,6 @@ class UserInfolist
                                     $a->zip,
                                 ]))) : '—';
                             }),
-                    ])
-                    ->columns(2),
-                Section::make('Timestamps')
-                    ->collapsed()
-                    ->schema([
-                        TextEntry::make('created_at')
-                            ->dateTime(),
-                        TextEntry::make('updated_at')
-                            ->dateTime(),
                     ])
                     ->columns(2),
             ]);

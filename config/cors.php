@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],  // Allow all methods
 
-    'allowed_origins' => ['http://localhost:3000', 'https://brd-seven.vercel.app'],  // Allow your Next.js app
+    'allowed_origins' => ['http://localhost:3000', 'https://primejapan.vercel.app'],  // Allow your Next.js app
 
     'allowed_origins_patterns' => [],
 

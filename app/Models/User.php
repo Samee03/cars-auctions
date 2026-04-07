@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Mail\AccountVerified;
 use App\Notifications\CustomerResetPassword;
 use App\Notifications\CustomerVerifyEmail;
 use Database\Factories\UserFactory;
@@ -16,6 +17,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 use Laravel\Scout\Searchable;
+use Mail;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -73,6 +75,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
             if ($user->isDirty('verified_badge')) {
                 if ($user->verified_badge) {
+                    Mail::to($user->email)->queue(new AccountVerified());
                     if (!$user->isDirty('admin_approved_at')) {
                         $user->admin_approved_at = now();
                     }

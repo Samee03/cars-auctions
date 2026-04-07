@@ -73,6 +73,12 @@ class User extends Authenticatable implements MustVerifyEmail
                 $user->name = $fullName;
             }
 
+            if ($user->isDirty('status')) {
+                if ($user->status == 'disabled') {
+                    $user->tokens()->delete();
+                }
+            }
+
             if ($user->isDirty('verified_badge')) {
                 if ($user->verified_badge) {
                     Mail::to($user->email)->queue(new AccountVerified());

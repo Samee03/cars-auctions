@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Tables;
 
+use App\Filament\Support\AuthContext;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
@@ -68,7 +69,8 @@ class UsersTable
                 TextColumn::make('assignedAgent.name')
                     ->label('Agent')
                     ->placeholder('—')
-                    ->toggleable(),
+                    ->toggleable()
+                    ->hidden(fn (): bool => AuthContext::isAgent()),
                 TextColumn::make('admin_approved_at')
                     ->dateTime()
                     ->sortable()
@@ -107,7 +109,8 @@ class UsersTable
                     ]),
                 SelectFilter::make('assigned_agent_id')
                     ->label('Agent')
-                    ->relationship('assignedAgent', 'name'),
+                    ->relationship('assignedAgent', 'name')
+                    ->hidden(fn (): bool => AuthContext::isAgent()),
             ])
             ->recordActions([
                 ViewAction::make(),

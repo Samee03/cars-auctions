@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use App\Filament\Support\AuthContext;
 use App\Models\Address;
 use App\Models\User;
 use Filament\Forms\Components\DatePicker;
@@ -122,7 +123,9 @@ class UserForm
                             ->relationship('assignedAgent', 'name')
                             ->searchable()
                             ->preload()
-                            ->nullable(),
+                            ->nullable()
+                            ->disabled(fn (): bool => AuthContext::isAgent())
+                            ->dehydrated(),
                         FormSelect::make('address_id')
                             ->label('Primary address')
                             ->relationship(

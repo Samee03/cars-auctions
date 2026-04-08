@@ -2,7 +2,8 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\User;
+use App\Filament\Support\AuthContext;
+use App\Services\UserStatsService;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -10,35 +11,41 @@ class UserStatsWidget extends BaseWidget
 {
     protected function getStats(): array
     {
-        $total = User::count();
-        $active = User::where('status', 'active')->count();
-        $verified = User::where('verified_badge', true)->count();
-        $emailVerified = User::whereNotNull('email_verified_at')->count();
-        $disabled = User::where('status', 'disabled')->count();
+        $admin   = AuthContext::admin();
+        $isAgent = AuthContext::isAgent();
+        $service = new UserStatsService($admin);
+
+        [
+            'total'         => $total,
+            'active'        => $active,
+            'verified'      => $verified,
+            'emailVerified' => $emailVerified,
+            'disabled'      => $disabled,
+        ] = $service->totals();
 
         return [
-            Stat::make('Total Users', $total)
-                ->description('All registered users')
+            Stat::make($isAgent ? 'My Customers' : 'All Customers', $total)
+                ->description($isAgent ? 'Customers assigned to you' : 'All registered customers')
                 ->descriptionIcon('heroicon-m-users')
                 ->color('primary'),
 
-            Stat::make('Active Users', $active)
-                ->description($total > 0 ? round(($active / $total) * 100) . '% of total' : '0% of total')
+            Stat::make('Active', $active)
+                ->description(UserStatsService::pct($active, $total))
                 ->descriptionIcon('heroicon-m-check-circle')
                 ->color('success'),
 
-            Stat::make('Disabled Users', $disabled)
-                ->description($total > 0 ? round(($disabled / $total) * 100) . '% of total' : '0% of total')
+            Stat::make('Disabled', $disabled)
+                ->description(UserStatsService::pct($disabled, $total))
                 ->descriptionIcon('heroicon-m-x-circle')
                 ->color('danger'),
 
             Stat::make('Badge Verified', $verified)
-                ->description('Admin approved users')
+                ->description('Admin approved customers')
                 ->descriptionIcon('heroicon-m-shield-check')
                 ->color('warning'),
 
             Stat::make('Email Verified', $emailVerified)
-                ->description($total > 0 ? round(($emailVerified / $total) * 100) . '% of total' : '0% of total')
+                ->description(UserStatsService::pct($emailVerified, $total))
                 ->descriptionIcon('heroicon-m-envelope-open')
                 ->color('info'),
         ];
